@@ -1,0 +1,149 @@
+{{- if .Values.agentWeb.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agent-web-context
+type: Opaque
+stringData:
+  agents-web.json: |
+    {
+      "creds": "/etc/nats-creds/web/nats.creds",
+      "url": "nats://nats"
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-web-ui
+  labels:
+    app.kubernetes.io/name: agent-web-ui
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-web-ui
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-web-ui
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: web
+          image: {{ .Values.agentWeb.image | quote }}
+          imagePullPolicy: {{ .Values.agentWeb.imagePullPolicy }}
+          env:
+            - name: NATS_CONTEXT
+              value: agents-web
+            - name: PORT
+              value: {{ .Values.agentWeb.port | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.agentWeb.port }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: context
+              mountPath: /home/bun/.config/nats/context
+              readOnly: true
+            - name: creds
+              mountPath: /etc/nats-creds/web
+              readOnly: true
+      volumes:
+        - name: context
+          secret:
+            secretName: agent-web-context
+        - name: creds
+          secret:
+            secretName: demo-agent-web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-web-ui
+spec:
+  selector:
+    app.kubernetes.io/name: agent-web-ui
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.agentWeb.port }}
+      targetPort: http
+{{- end }}
+{{- if .Values.echoAgent.enabled }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agent-echo-context
+type: Opaque
+stringData:
+  agents-echo.json: |
+    {
+      "creds": "/etc/nats-creds/echo/nats.creds",
+      "url": "nats://nats"
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-echo
+  labels:
+    app.kubernetes.io/name: agent-echo
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-echo
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-echo
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: echo
+          image: {{ .Values.echoAgent.image | quote }}
+          imagePullPolicy: {{ .Values.echoAgent.imagePullPolicy }}
+          env:
+            - name: NATS_CONTEXT
+              value: agents-echo
+            - name: NATS_AGENT_OWNER
+              value: {{ .Values.echoAgent.owner | quote }}
+            - name: NATS_AGENT_NAME
+              value: {{ .Values.echoAgent.name | quote }}
+            - name: NATS_AGENT_HEARTBEAT_INTERVAL
+              value: {{ .Values.echoAgent.heartbeatInterval | quote }}
+          resources:
+            requests:
+              cpu: 25m
+              memory: 48Mi
+            limits:
+              memory: 192Mi
+          volumeMounts:
+            - name: context
+              mountPath: /home/node/.config/nats/context
+              readOnly: true
+            - name: creds
+              mountPath: /etc/nats-creds/echo
+              readOnly: true
+      volumes:
+        - name: context
+          secret:
+            secretName: agent-echo-context
+        - name: creds
+          secret:
+            secretName: demo-agent-echo
+{{- end }}

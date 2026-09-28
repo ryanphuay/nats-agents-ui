@@ -1,0 +1,7 @@
+.tools/
+.state/
+kubeconfig
+rendered.yaml
+scripts/
+.git/
+agents/

@@ -1,0 +1,40 @@
+nats:
+  fullnameOverride: nats
+  config:
+    cluster:
+      enabled: false
+    jetstream:
+      enabled: false
+    resolver:
+      enabled: true
+      merge:
+        type: full
+        interval: 2m
+        timeout: 2s
+      pvc:
+        enabled: true
+        size: 1Gi
+  container:
+    merge:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          memory: 256Mi
+  natsBox:
+    enabled: false
+
+agentWeb:
+  enabled: true
+  image: synadia-agent-web-ui:ed2bf30-focused1
+  imagePullPolicy: IfNotPresent
+  port: 3300
+
+echoAgent:
+  enabled: true
+  image: synadia-agent-echo:bbc1057
+  imagePullPolicy: IfNotPresent
+  owner: demo
+  name: main
+  heartbeatInterval: "2"

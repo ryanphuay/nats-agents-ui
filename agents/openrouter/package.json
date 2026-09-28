@@ -1,0 +1,10 @@
+{
+  "name": "nats-agents-demo-openrouter-agent",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "bun test" },
+  "dependencies": {
+    "@nats-io/transport-node": "^3.4.0",
+    "@synadia-ai/agent-service": "^0.5.2"
+  }
+}

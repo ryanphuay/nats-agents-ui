@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+DEMO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+exec kubectl --kubeconfig "$DEMO_DIR/kubeconfig" -n nats-demo port-forward service/nats 15222:4222

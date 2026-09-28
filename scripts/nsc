@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+DEMO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+NSC_BIN="${NSC_BIN:-$DEMO_DIR/.tools/nsc}"
+if [ ! -x "$NSC_BIN" ]; then
+  NSC_BIN="$(command -v nsc || true)"
+fi
+if [ -z "$NSC_BIN" ]; then
+  echo "Install NSC for this operating system and architecture, or set NSC_BIN." >&2
+  exit 1
+fi
+exec "$NSC_BIN" --all-dirs "$DEMO_DIR/.state/nsc" "$@"

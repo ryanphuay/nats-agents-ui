@@ -1,0 +1,3 @@
+{{- if not (index .Values.nats.config.merge "operator") }}
+{{- fail "JWT identities are required. Run scripts/install.sh or pass -f .state/auth-values.json." }}
+{{- end }}
